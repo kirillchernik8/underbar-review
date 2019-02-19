@@ -170,17 +170,17 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function (collection, iterator, accumulator) {
-    iterator = iterator||_.identity;
+    iterator = iterator || _.identity;
     var flag1 = arguments.length === 2;
 
-      _.each (collection, function (item) {
-      if(flag1){
+    _.each(collection, function (item) {
+      if (flag1) {
         accumulator = item;
         flag1 = false
       } else {
         // accumulator === undefined ?  : 
-        accumulator = iterator( accumulator, item)
-        
+        accumulator = iterator(accumulator, item)
+
 
       }
     })
@@ -203,12 +203,23 @@
   // Determine whether all of the elements match a truth test.
   _.every = function (collection, iterator) {
     // TIP: Try re-using reduce() here.
+    iterator = iterator || _.identity
+    return _.reduce(collection, function (wasFound, item) {
+      if (wasFound && iterator(item)) {
+        return true;
+      }
+      return false
+    }, true);
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function (collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    iterator = iterator || _.identity
+    return !_.every(collection, function (item) {
+      return !iterator(item);
+    })
   };
 
 
@@ -231,11 +242,27 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function (obj) {
+    var realInputs = [].slice.call(arguments, 1);
+    realInputs.forEach((argObj) => {
+      _.each(argObj, (val, key) => {
+        obj[key] = val
+      })
+    })
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function (obj) {
+    var realInputs = [].slice.call(arguments, 1);
+    realInputs.forEach((argObj) => {
+      _.each(argObj, (val, key) => {
+        if (!obj.hasOwnProperty(key)) {
+          obj[key] = val
+        }
+      })
+    })
+    return obj;
   };
 
 
@@ -279,6 +306,14 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function (func) {
+    var memory = {};
+    return function () {
+      var argsOffunc = JSON.stringify(arguments);
+      if(!memory.hasOwnProperty(argsOffunc)){
+        memory[argsOffunc] = func.apply(this, arguments)
+      }
+      return memory[argsOffunc]
+    }
   };
 
   // Delays a function for the given number of milliseconds, and then calls
